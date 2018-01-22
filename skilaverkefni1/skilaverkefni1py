@@ -19,60 +19,80 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+#næ í myndir
 teningur1png = pygame.image.load('teningur1.png')
 teningur2png = pygame.image.load('teningur2.png')
 teningur3png = pygame.image.load('teningur3.png')
 teningur4png = pygame.image.load('teningur4.png')
 teningur5png = pygame.image.load('teningur5.png')
 teningur6png = pygame.image.load('teningur6.png')
+#læt myndir í lista
 teningalisti=[[teningur1png,1],[teningur2png,2],[teningur3png,3],[teningur4png,4],[teningur5png,5],[teningur6png,6]]
-clickedkassar=[]
 
-# font for "drawing" a text on the screen put in the my_font variable
-my_font = pygame.font.SysFont("", 30)
-# draw a red rectangle
-pygame.draw.rect(window, RED, pygame.Rect(170, 330, 250, 50))
-# the text is rendered and put in the variable label
-label = my_font.render('Click to reroll selected', 1, BLUE)
-# and then drawn on the screen and positioned within the red rectangle
-window.blit(label, (180, 340))
 
 running = True  # loop control variable(for the game loop)
+#birti fimm random teninga
 a=window.blit(teningalisti[randint(0,5)][0],(0,0))
 b=window.blit(teningalisti[randint(0,5)][0],(200,0))
 c=window.blit(teningalisti[randint(0,5)][0],(0,200))
 d=window.blit(teningalisti[randint(0,5)][0],(200,200))
 e=window.blit(teningalisti[randint(0,5)][0],(400,200))
 pygame.display.flip()
+#set myndir í lista
 imagelisti=[a,b,c,d,e]
+#teljari fyrir hve oft hefur verið rúllað aftur
+rollcounter=0
+#listi til að fylgjast með kössum sem hafa verið valdir
+clickedkassar=[]
 while running:
+    #birti texta í reroll kassa eftir hve oft hefur verið rúllað
+    my_font = pygame.font.SysFont("", 30)
+    rollcheck = pygame.draw.rect(window, RED, pygame.Rect(170, 330, 250, 50))
+    if rollcounter<=1:
+        label = my_font.render('Click to reroll selected', 1, BLUE)
+        window.blit(label, (180, 340))
+        pygame.display.flip()
+    else:
+        label = my_font.render('Already rerolled twice', 1, BLUE)
+        window.blit(label, (180, 340))
+        pygame.display.flip()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        #lokar leiknum ef það er ýtt á escape
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             running = False
+        #athuga ef það  var klikkað
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT_BUTTON:
+            #fæ hnit hvar var klikkað
             x , y = event.pos
+            #fer í gegnum alla teninga til að vita hvort var klikkað á þá
             for img in imagelisti:
                 if img.collidepoint(event.pos):
+                    #ef þeir eru klikkaðir þá eru þeir bætir við clickedkassar
+                    #ef að þeir voru nú þegar í listanum þá eru þeir fjarlægðir
                     if img not in clickedkassar:
-                        print(img)
                         clickedkassar.append(img)
+                        print("Selected dice")
+                        print(len(clickedkassar),"dice selected")
                     else:
                         clickedkassar.remove(img)
-            for image in imagelisti:
-                if image in clickedkassar:
-                    print(len(clickedkassar),"lengd")
-                    print(clickedkassar)
-                    print(image[0],"x")
-                    print(image[1],"y")
-                    clickedkassar.remove(image)
-                    image=window.blit(teningalisti[randint(0,5)][0],(image[0],image[1]))
-                    print(image[1],"er")
-                    pygame.display.flip()
-                    print("flip")
-
-
-
-
+                        print("Unselected dice")
+                        print(len(clickedkassar),"dice selected")
+            #ef það var klikkað á reroll kassan
+            if rollcheck.collidepoint(event.pos):
+                #athuga ef notandi má rúlla aftur eða ekki
+                if rollcounter<=1 and len(clickedkassar)>0:
+                    rollcounter+=1
+                    #fer í gegnum listan af völdnum kössum og rúlla þeim aftur
+                    for image in imagelisti:
+                        if image in clickedkassar:
+                            clickedkassar.remove(image)
+                            image=window.blit(teningalisti[randint(0,5)][0],(image[0],image[1]))
+                            pygame.display.flip()
+                            print("flip")
+                #segi notanda  hann hefur ekki valið neina kassa
+                elif rollcounter<=1 and len(clickedkassar)==0:
+                    print("You haven't selected any dice for rerolling!")
 pygame.quit() # When the game loop is no longer running this causes the program to quit.
